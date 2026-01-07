@@ -10,12 +10,37 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 # -------------------------------------------------
 # Page Config
 # -------------------------------------------------
-st.set_page_config(page_title="Customer Churn Prediction", layout="wide")
-
-st.title(" Customer Churn Prediction System")
+st.set_page_config(
+    page_title="Customer Churn Prediction",
+    page_icon="📊",
+    layout="wide"
+)
 
 # -------------------------------------------------
-# Load Dataset
+# Custom CSS for Better Look
+# -------------------------------------------------
+st.markdown("""
+<style>
+.metric-box {
+    background-color: #f0f2f6;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+.big-text {
+    font-size: 32px;
+    font-weight: bold;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# -------------------------------------------------
+# Title
+# -------------------------------------------------
+st.markdown("<h1 style='text-align: center; color: #4CAF50;'>📊 Customer Churn Prediction Dashboard</h1>", unsafe_allow_html=True)
+
+# -------------------------------------------------
+# Load Data
 # -------------------------------------------------
 @st.cache_data
 def load_data():
@@ -23,8 +48,8 @@ def load_data():
 
 df = load_data()
 
-st.subheader(" Dataset Preview")
-st.dataframe(df.head())
+with st.expander(" View Dataset"):
+    st.dataframe(df.head())
 
 # -------------------------------------------------
 # Preprocessing
@@ -52,17 +77,33 @@ y_pred = model.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 
 # -------------------------------------------------
-# Performance Section (HIGHLIGHTED)
+# PERFORMANCE SECTION
 # -------------------------------------------------
-st.subheader(" Model Performance")
+st.markdown("##  Model Performance")
 
-# Accuracy Highlight
-st.metric(
-    label="Model Accuracy",
-    value=f"{accuracy*100:.2f} %"
-)
+col1, col2 = st.columns(2)
 
-# Confusion Matrix
+with col1:
+    st.markdown("""
+    <div class="metric-box">
+        <p class="big-text" style="color: #2196F3;">{:.2f}%</p>
+        <p>Model Accuracy</p>
+    </div>
+    """.format(accuracy * 100), unsafe_allow_html=True)
+
+with col2:
+    if accuracy >= 0.8:
+        st.success(" Excellent Model Performance")
+    elif accuracy >= 0.6:
+        st.warning(" Average Model Performance")
+    else:
+        st.error(" Poor Model Performance")
+
+# -------------------------------------------------
+# CONFUSION MATRIX
+# -------------------------------------------------
+st.markdown("##  Confusion Matrix")
+
 cm = confusion_matrix(y_test, y_pred)
 
 cm_df = pd.DataFrame(
@@ -71,34 +112,31 @@ cm_df = pd.DataFrame(
     columns=["Predicted No Churn", "Predicted Churn"]
 )
 
-st.subheader(" Confusion Matrix")
 st.dataframe(
     cm_df.style
-        .background_gradient(cmap="Blues")
-        .set_properties(**{"font-weight": "bold"})
+        .background_gradient(cmap="Greens")
+        .set_properties(**{
+            "font-size": "18px",
+            "font-weight": "bold",
+            "text-align": "center"
+        })
 )
 
-# Confusion Matrix Analysis
 tn, fp, fn, tp = cm.ravel()
 
-st.markdown("###  Confusion Matrix Analysis")
-st.write(f" Correctly identified **non-churn** customers: {tn}")
-st.write(f" Non-churn customers misclassified as churn: {fp}")
-st.write(f" Churn customers missed by the model: {fn}")
-st.write(f" Correctly identified **churn** customers: {tp}")
+col3, col4, col5, col6 = st.columns(4)
 
-# Performance Message
-if accuracy >= 0.8:
-    st.success(" Model performance is GOOD")
-elif accuracy >= 0.6:
-    st.warning(" Model performance is AVERAGE")
-else:
-    st.error(" Model performance is POOR")
+col3.metric("True Negatives", tn)
+col4.metric("False Positives", fp)
+col5.metric("False Negatives", fn)
+col6.metric("True Positives", tp)
 
 # -------------------------------------------------
-# Prediction Section
+# PREDICTION SECTION
 # -------------------------------------------------
-st.subheader(" Predict Churn for a New Customer")
+st.markdown("##  Predict Churn for New Customer")
+
+st.info("Enter customer details below and click **Predict Churn**")
 
 input_data = {}
 for col in X.columns:
@@ -107,11 +145,20 @@ for col in X.columns:
 input_df = pd.DataFrame([input_data])
 input_scaled = scaler.transform(input_df)
 
-if st.button("Predict Churn"):
+if st.button(" Predict Churn"):
     prediction = model.predict(input_scaled)[0]
     probability = model.predict_proba(input_scaled)[0][1]
 
     if prediction == 1:
-        st.error(f" Customer is **Likely to Churn** (Probability: {probability:.2f})")
+        st.error(f" **Customer is Likely to Churn**  \nProbability: **{probability:.2f}**")
     else:
-        st.success(f" Customer is **Likely to Stay** (Probability: {probability:.2f})")
+        st.success(f" **Customer is Likely to Stay**  \nProbability: **{probability:.2f}**")
+
+# -------------------------------------------------
+# Footer
+# -------------------------------------------------
+st.markdown("---")
+st.markdown(
+    "<p style='text-align:center;'>Developed using Streamlit & Logistic Regression</p>",
+    unsafe_allow_html=True
+)
