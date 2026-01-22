@@ -8,7 +8,8 @@ import numpy as np
 # --- Load & Prepare Dataset ---
 @st.cache_data
 def load_and_train_models():
-    df = pd.read_csv(r"C:\Users\gurra\SVM\archive\train_u6lujuX_CVtuZ9i.csv")
+    df = pd.read_csv("train_u6lujuX_CVtuZ9i.csv")
+
     df.drop(columns=["Loan_ID"], inplace=True)
 
     # Fill missing numerical columns
@@ -106,3 +107,4 @@ if st.sidebar.button("Check Loan Eligibility"):
                    "likely to repay the loan." if pred==1 else
                    "unlikely to repay the loan.")
     st.write(explanation)
+
