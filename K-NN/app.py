@@ -11,7 +11,7 @@ from sklearn.neighbors import KNeighborsClassifier
 # -----------------------------
 @st.cache_data
 def load_data():
-    df = pd.read_csv(r"C:\Users\gurra\K-NN\credit_risk_dataset.csv")
+    df = pd.read_csv("credit_risk_dataset.csv")
     
     # Impute missing numerical values
     num_imputer = SimpleImputer(strategy="median")
@@ -98,3 +98,4 @@ if st.button("Predict Customer Risk"):
     st.subheader("Business Insight")
     st.write("This decision is based on similarity with nearby customers in feature space. "
              "Customers with similar age, income, loan amount, and credit history influence the risk prediction.")
+
