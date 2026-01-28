@@ -23,7 +23,8 @@ This system uses **K-Means Clustering** to group customers based on their purcha
 def load_data():
     df = pd.read_csv("Wholesale customers data.csv")
     # Clean column names
-    df.columns = df.columns.str.strip().replace({'Delicassen':'Delicatessen'})
+    df.columns = df.columns.str.strip()  # remove leading/trailing spaces
+    df.rename(columns={'Delicassen': 'Delicatessen'}, inplace=True)  # fix typo
     return df
 
 df = load_data()
