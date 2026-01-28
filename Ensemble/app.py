@@ -68,7 +68,7 @@ X_test_scaled = scaler.transform(X_test)
 # -------------------------
 # 5️⃣ Sidebar Inputs
 # -------------------------
-st.sidebar.header("📋 Applicant Details")
+st.sidebar.header(" Applicant Details")
 
 gender = st.sidebar.selectbox("Gender", ["Male", "Female"])
 married = st.sidebar.selectbox("Married", ["Yes", "No"])
@@ -169,20 +169,20 @@ if st.button("Check Loan Eligibility (Stacking Model)"):
     # -------------------------
     # 9️⃣ Output Section
     # -------------------------
-    st.subheader("📊 Base Model Predictions")
+    st.subheader(" Base Model Predictions")
     st.write(f"**Logistic Regression:** {'Approved' if lr_pred else 'Rejected'}")
     st.write(f"**Decision Tree:** {'Approved' if dt_pred else 'Rejected'}")
     st.write(f"**Random Forest:** {'Approved' if rf_pred else 'Rejected'}")
 
-    st.subheader("🧠 Final Stacking Decision")
+    st.subheader(" Final Stacking Decision")
     if final_pred == 1:
         st.success("✅ Loan Approved")
     else:
         st.error("❌ Loan Rejected")
     
-    st.write(f"📈 **Confidence Score:** {confidence:.2f}%")
+    st.write(f" **Confidence Score:** {confidence:.2f}%")
 
-    st.subheader("💼 Business Explanation")
+    st.subheader(" Business Explanation")
     explanation = (
         f"Based on the applicant’s income, credit history, employment status, "
         f"dependents, and combined predictions from multiple machine learning models, "
@@ -190,3 +190,4 @@ if st.button("Check Loan Eligibility (Stacking Model)"):
         f"Therefore, the stacking model predicts **loan {'approval' if final_pred else 'rejection'}**."
     )
     st.info(explanation)
+
