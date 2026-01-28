@@ -14,7 +14,7 @@ from sklearn.model_selection import train_test_split
 # 2️⃣ App Title & Description
 # -------------------------
 st.set_page_config(page_title="Smart Loan Approval System", layout="wide")
-st.title(" Smart Loan Approval System – Stacking Model")
+st.title("🎯 Smart Loan Approval System – Stacking Model")
 st.markdown("""
 **This system uses a Stacking Ensemble Machine Learning model to predict whether a loan
 will be approved by combining multiple ML models for better decision making.**
@@ -23,7 +23,6 @@ will be approved by combining multiple ML models for better decision making.**
 # -------------------------
 # 3️⃣ Load Dataset
 # -------------------------
-# Replace path with your local CSV file
 df = pd.read_csv("train_u6lujuX_CVtuZ9i.csv")
 
 # -------------------------
@@ -35,21 +34,25 @@ df = df.drop(columns=["Loan_ID"])
 # Encode target
 df["Loan_Status"] = df["Loan_Status"].map({"Y": 1, "N": 0})
 
-# Fill missing values correctly
+# Fix 'Dependents' column (replace '3+' with 3)
+df['Dependents'] = df['Dependents'].replace('3+', 3).astype(float)
+
+# Fill missing numeric values
 numeric_cols = df.select_dtypes(include=np.number).columns
 df[numeric_cols] = df[numeric_cols].fillna(df[numeric_cols].mean())
 
-categorical_cols = df.select_dtypes(exclude=np.number).columns
+# Fill missing categorical values
+categorical_cols = ['Gender', 'Married', 'Education', 'Self_Employed', 'Property_Area']
 for col in categorical_cols:
     df[col] = df[col].fillna(df[col].mode()[0])
 
 # Encode categorical features
-df["Gender"] = df["Gender"].map({"Male": 1, "Female": 0})
-df["Married"] = df["Married"].map({"Yes": 1, "No": 0})
-df["Education"] = df["Education"].map({"Graduate": 1, "Not Graduate": 0})
-df["Self_Employed"] = df["Self_Employed"].map({"Yes": 1, "No": 0})
+df["Gender"] = df["Gender"].map({"Male": 1, "Female": 0}).astype(float)
+df["Married"] = df["Married"].map({"Yes": 1, "No": 0}).astype(float)
+df["Education"] = df["Education"].map({"Graduate": 1, "Not Graduate": 0}).astype(float)
+df["Self_Employed"] = df["Self_Employed"].map({"Yes": 1, "No": 0}).astype(float)
 property_map = {"Urban": 2, "Semiurban": 1, "Rural": 0}
-df["Property_Area"] = df["Property_Area"].map(property_map)
+df["Property_Area"] = df["Property_Area"].map(property_map).astype(float)
 
 # Features & target
 X = df.drop(columns=["Loan_Status"])
@@ -68,17 +71,19 @@ X_test_scaled = scaler.transform(X_test)
 # -------------------------
 # 5️⃣ Sidebar Inputs
 # -------------------------
-st.sidebar.header(" Applicant Details")
+st.sidebar.header("📋 Applicant Details")
 
 applicant_income = st.sidebar.number_input("Applicant Income", min_value=0.0, step=1000.0)
 coapplicant_income = st.sidebar.number_input("Co-Applicant Income", min_value=0.0, step=1000.0)
 loan_amount = st.sidebar.number_input("Loan Amount", min_value=0.0, step=1000.0)
 loan_term = st.sidebar.number_input("Loan Amount Term (Months)", min_value=1, step=1)
+dependents = st.sidebar.selectbox("Dependents", ["0", "1", "2", "3+"])
 credit_history = st.sidebar.radio("Credit History", ["Yes", "No"])
 employment = st.sidebar.selectbox("Employment Status", ["Salaried", "Self-Employed"])
 property_area = st.sidebar.selectbox("Property Area", ["Urban", "Semiurban", "Rural"])
 
 # Encode user inputs
+dependents_val = 3.0 if dependents == "3+" else float(dependents)
 credit_val = 1 if credit_history == "Yes" else 0
 employment_val = 1 if employment == "Salaried" else 0
 property_val = property_map[property_area]
@@ -88,6 +93,7 @@ user_data = np.array([[
     coapplicant_income,
     loan_amount,
     loan_term,
+    dependents_val,
     credit_val,
     employment_val,
     property_val
@@ -96,7 +102,7 @@ user_data = np.array([[
 # -------------------------
 # 6️⃣ Display Stacking Architecture
 # -------------------------
-st.subheader(" Stacking Model Architecture")
+st.subheader("🧩 Stacking Model Architecture")
 st.info("""
 **Base Models Used**
 • Logistic Regression  
@@ -124,7 +130,7 @@ rf.fit(X_train_scaled, y_train)
 # -------------------------
 # 8️⃣ Prediction Button
 # -------------------------
-st.markdown("###  Prediction")
+st.markdown("### 🔘 Prediction")
 
 if st.button("Check Loan Eligibility (Stacking Model)"):
     
@@ -150,23 +156,23 @@ if st.button("Check Loan Eligibility (Stacking Model)"):
     # -------------------------
     # 9️⃣ Output Section
     # -------------------------
-    st.subheader(" Base Model Predictions")
+    st.subheader("📊 Base Model Predictions")
     st.write(f"**Logistic Regression:** {'Approved' if lr_pred else 'Rejected'}")
     st.write(f"**Decision Tree:** {'Approved' if dt_pred else 'Rejected'}")
     st.write(f"**Random Forest:** {'Approved' if rf_pred else 'Rejected'}")
 
-    st.subheader(" Final Stacking Decision")
+    st.subheader("🧠 Final Stacking Decision")
     if final_pred == 1:
-        st.success(" Loan Approved")
+        st.success("✅ Loan Approved")
     else:
-        st.error(" Loan Rejected")
+        st.error("❌ Loan Rejected")
     
-    st.write(f" **Confidence Score:** {confidence:.2f}%")
+    st.write(f"📈 **Confidence Score:** {confidence:.2f}%")
 
-    st.subheader(" Business Explanation")
+    st.subheader("💼 Business Explanation")
     explanation = (
         f"Based on the applicant’s income, credit history, employment status, "
-        f"and combined predictions from multiple machine learning models, "
+        f"dependents, and combined predictions from multiple machine learning models, "
         f"the applicant is **{'likely' if final_pred else 'unlikely'} to repay the loan**. "
         f"Therefore, the stacking model predicts **loan {'approval' if final_pred else 'rejection'}**."
     )
