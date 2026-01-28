@@ -31,7 +31,7 @@ df = pd.read_csv("train_u6lujuX_CVtuZ9i.csv")
 df = df.drop(columns=["Loan_ID"])
 df["Loan_Status"] = df["Loan_Status"].map({"Y": 1, "N": 0})
 
-# Fix 'Dependents'
+# Fix 'Dependents' column
 df['Dependents'] = df['Dependents'].replace('3+', 3).astype(float)
 
 # Fill missing numeric values
@@ -70,6 +70,9 @@ X_test_scaled = scaler.transform(X_test)
 # -------------------------
 st.sidebar.header("📋 Applicant Details")
 
+gender = st.sidebar.selectbox("Gender", ["Male", "Female"])
+married = st.sidebar.selectbox("Married", ["Yes", "No"])
+education = st.sidebar.selectbox("Education", ["Graduate", "Not Graduate"])
 applicant_income = st.sidebar.number_input("Applicant Income", min_value=0.0, step=1000.0)
 coapplicant_income = st.sidebar.number_input("Co-Applicant Income", min_value=0.0, step=1000.0)
 loan_amount = st.sidebar.number_input("Loan Amount", min_value=0.0, step=1000.0)
@@ -80,19 +83,26 @@ employment = st.sidebar.selectbox("Employment Status", ["Salaried", "Self-Employ
 property_area = st.sidebar.selectbox("Property Area", ["Urban", "Semiurban", "Rural"])
 
 # Encode user inputs
+gender_val = 1 if gender == "Male" else 0
+married_val = 1 if married == "Yes" else 0
+education_val = 1 if education == "Graduate" else 0
 dependents_val = 3.0 if dependents == "3+" else float(dependents)
 credit_val = 1 if credit_history == "Yes" else 0
 employment_val = 1 if employment == "Salaried" else 0
 property_val = property_map[property_area]
 
-user_data = np.array([[ 
+# Create input array in the same order as X_train columns
+user_data = np.array([[
+    gender_val,
+    married_val,
+    dependents_val,
+    education_val,
+    employment_val,       # Self_Employed
     applicant_income,
     coapplicant_income,
     loan_amount,
     loan_term,
-    dependents_val,
     credit_val,
-    employment_val,
     property_val
 ]]).astype(float)
 
