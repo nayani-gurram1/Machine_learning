@@ -28,13 +28,10 @@ df = pd.read_csv("train_u6lujuX_CVtuZ9i.csv")
 # -------------------------
 # 4️⃣ Data Preprocessing
 # -------------------------
-# Drop irrelevant column
 df = df.drop(columns=["Loan_ID"])
-
-# Encode target
 df["Loan_Status"] = df["Loan_Status"].map({"Y": 1, "N": 0})
 
-# Fix 'Dependents' column (replace '3+' with 3)
+# Fix 'Dependents'
 df['Dependents'] = df['Dependents'].replace('3+', 3).astype(float)
 
 # Fill missing numeric values
@@ -97,7 +94,12 @@ user_data = np.array([[
     credit_val,
     employment_val,
     property_val
-]])
+]]).astype(float)
+
+# Safety check: feature number match
+if user_data.shape[1] != X_train_scaled.shape[1]:
+    st.error(f"Feature mismatch! Expected {X_train_scaled.shape[1]} features, got {user_data.shape[1]}")
+    st.stop()
 
 # -------------------------
 # 6️⃣ Display Stacking Architecture
@@ -142,16 +144,17 @@ if st.button("Check Loan Eligibility (Stacking Model)"):
     rf_pred = rf.predict(user_scaled)[0]
 
     # Meta-model dataset (Stacking)
-    stacked_input = np.array([[lr_pred, dt_pred, rf_pred]])
+    stacked_input_train = np.column_stack([
+        lr.predict(X_train_scaled),
+        dt.predict(X_train_scaled),
+        rf.predict(X_train_scaled)
+    ])
     meta_model = LogisticRegression()
-    meta_model.fit(
-        np.column_stack([lr.predict(X_train_scaled),
-                         dt.predict(X_train_scaled),
-                         rf.predict(X_train_scaled)]),
-        y_train
-    )
-    final_pred = meta_model.predict(stacked_input)[0]
-    confidence = max(meta_model.predict_proba(stacked_input)[0]) * 100
+    meta_model.fit(stacked_input_train, y_train)
+    
+    stacked_input_user = np.array([[lr_pred, dt_pred, rf_pred]])
+    final_pred = meta_model.predict(stacked_input_user)[0]
+    confidence = max(meta_model.predict_proba(stacked_input_user)[0]) * 100
 
     # -------------------------
     # 9️⃣ Output Section
